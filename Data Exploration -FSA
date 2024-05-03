@@ -1,0 +1,172 @@
+
+--1.	Total Number of FBOs in Basingstoke and Dean and the table/column/rows
+
+SELECT COUNT(*) AS COUNT_FBOS FROM FSA_data;
+
+SELECT *
+FROM FSA_data;
+
+SELECT TOP(20) --limit
+FHRSID, BusinessType, BusinessName, RatingValue, PostCode
+FROM FSA_data;
+
+--2.	Business categories number and names and sorting: 
+
+SELECT COUNT(DISTINCT BusinessType) AS count_biztype
+FROM FSA_data;
+
+SELECT BusinessType, COUNT(BusinessType) AS count_businesstype
+FROM FSA_data
+GROUP BY BusinessType;
+
+SELECT  DISTINCT(BusinessType), COUNT(BusinessType) AS BusinessType_Count
+FROM FSA_data
+GROUP BY BusinessType;
+
+SELECT  DISTINCT(RatingValue), COUNT(RatingValue) AS RatingValue_Count
+FROM FSA_data
+GROUP BY RatingValue
+ORDER BY RatingValue;
+
+SELECT BusinessType, COUNT(BusinessType) AS count_businesstype
+FROM FSA_data
+WHERE ISNUMERIC(RatingValue) = 1 AND
+RatingValue > 2  
+GROUP BY BusinessType  
+
+
+--3. Names of Restaurant/Cafe/Canteen
+
+SELECT BusinessType, BusinessName,RatingValue 
+FROM FSA_data
+WHERE BusinessType LIKE 'Rest%'
+order by RatingValue;
+
+--4. Names of Restaurant/Cafe/Canteen
+
+SELECT BusinessType, BusinessName,RatingValue 
+FROM FSA_data
+WHERE BusinessType LIKE 'Take%'
+order by RatingValue;
+
+--5. Names of 'Pub/bar/nightclub' 'Mobile caterer';
+
+SELECT BusinessType, BusinessName,RatingValue 
+FROM FSA_data
+WHERE BusinessType LIKE '%bar%'
+order by RatingValue;
+
+--6. Names of 'Mobile caterer';
+
+SELECT BusinessType, BusinessName,RatingValue 
+FROM FSA_data
+WHERE BusinessType LIKE 'Mobile%'
+order by RatingValue;
+
+--7. Find out the hygeine rating for Pret a manger, starbucks, cafes @festival place
+
+SELECT BusinessName,RatingValue, AddressLine1, AddressLine2, AddressLine3, PostCode
+FROM FSA_data
+WHERE BusinessName like '%german%'
+
+SELECT BusinessName,RatingValue, AddressLine1, AddressLine2, AddressLine3, PostCode
+FROM FSA_data
+WHERE AddressLine1 LIKE 'fest%'
+
+SELECT BusinessName,RatingValue, AddressLine1, AddressLine2, AddressLine3, PostCode
+FROM FSA_data
+WHERE BusinessName LIKE 'star%'
+
+--8. 
+--Select based on postcodes by RatingValue;
+	--Missing postcodes - 430 ROWS
+
+SELECT BusinessName, AddressLine1, AddressLine2, PostCode, RatingValue
+FROM FSA_data
+WHERE PostCode IS NULL
+ORDER BY RatingValue;
+--9.
+--Changing the converting ratingvalue to float to calculate avg
+-- modifying the datatype of the column
+ALTER TABLE FSA_data
+ALTER COLUMN RatingValue VARCHAR(50) NULL;
+
+Select
+DISTINCT PostCode AS By_Postcode, COUNT(PostCode) AS num_postcode,
+Avg(Cast(RatingValue as float)) As Avg_rating
+From FSA_data 
+where IsNumeric(RatingValue) = 1 
+GROUP BY PostCode;
+
+-- FBOs who are exempt from hygeine rating
+SELECT BusinessName, BusinessType
+FROM FSA_data
+WHERE RatingValue LIKE 'Exempt';
+
+-- FBOs who are AwaitingInspection 
+SELECT BusinessName, BusinessType
+FROM FSA_data
+WHERE RatingValue LIKE 'AwaitingInspection';
+
+SELECT *
+FROM FSA_data
+WHERE Postcode IS NULL ;
+
+
+
+SELECT MIN(CAST(RatingValue as float)) As Min_rating, MAX(CAST(RatingValue as float)) As Max_rating, AVG(CAST(RatingValue as float)) As Avg_rating
+FROM FSA_data 
+WHERE ISNUMERIC(RatingValue) = 1 
+
+SELECT
+DISTINCT PostCode AS By_Postcode, COUNT(PostCode) AS num_postcode,
+MIN(CAST(RatingValue as float)) As Min_rating, MAX(CAST(RatingValue as float)) As Max_rating,  AVG(CAST(RatingValue as float)) As Avg_rating
+FROM FSA_data 
+WHERE ISNUMERIC(RatingValue) = 1 
+GROUP BY PostCode;
+
+/* 
+CASE STATEMENTS
+*/
+
+SELECT BusinessName, RatingValue,
+CASE
+	WHEN RatingValue >3 THEN 'GOOD'
+	WHEN RatingValue <2 THEN 'BAD'
+	ELSE 'OK'
+END AS Rating
+FROM FSA_data
+WHERE ISNUMERIC(RatingValue) = 1 
+ORDER BY RatingValue
+
+--SELECT BusinessName,
+--AddressLine1 + ' ' + AddressLine2 + ' ' + AddressLine3 + ' ' + AddressLine4 + ' ' + PostCode AS Full_Address
+--FROM FSA_data
+
+SELECT BusinessName,
+AddressLine1 + ' '  + PostCode AS Full_Address
+FROM FSA_data
+WHERE PostCode IS NOT NULL
+
+--TEMP TABLES
+CREATE TABLE #temp_FSA(
+BusinessName VARCHAR(50),
+RatingValue INT,
+Rating varchar(50))
+
+ALTER TABLE #temp_FSA
+ALTER COLUMN BusinessName VARCHAR(200) NULL;
+
+
+INSERT INTO #temp_FSA
+SELECT BusinessName, RatingValue,
+CASE
+	WHEN RatingValue >3 THEN 'GOOD'
+	WHEN RatingValue <2 THEN 'BAD'
+	ELSE 'OK'
+END AS Rating
+FROM FSA_data
+WHERE ISNUMERIC(RatingValue) = 1 
+ORDER BY RatingValue
+
+SELECT * FROM #temp_FSA
