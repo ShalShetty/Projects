@@ -170,3 +170,71 @@ WHERE ISNUMERIC(RatingValue) = 1
 ORDER BY RatingValue
 
 SELECT * FROM #temp_FSA
+
+SELECT TOP(20) 
+FHRSID, BusinessType, BusinessName, RatingValue, PostCode
+FROM FSA_data24;
+
+-- INNER JOIN / JOIN  (1396 rows)
+SELECT FSA_data.BusinessName, FSA_data24.BusinessName AS Biz_name24
+FROM FSA_data
+INNER JOIN  FSA_data24
+ON FSA_data.FHRSID = FSA_data24.FHRSID;
+
+-- LEFT OUTER JOIN  (1403 rows)
+SELECT FSA_data.FHRSID,FSA_data.BusinessName, FSA_data24.BusinessName AS Biz_name24
+FROM FSA_data
+LEFT OUTER JOIN  FSA_data24
+ON FSA_data.FHRSID = FSA_data24.FHRSID;
+
+--RIGHT OUTER JOIN (1401 ROWS)
+SELECT FSA_data.FHRSID,FSA_data.BusinessName, FSA_data24.BusinessName AS Biz_name24
+FROM FSA_data
+RIGHT OUTER JOIN  FSA_data24
+ON FSA_data.FHRSID = FSA_data24.FHRSID;
+
+--FULL JOIN / FULL OUTER(1408 ROWS)
+
+SELECT FSA_data.FHRSID,FSA_data.BusinessName, FSA_data24.BusinessName AS Biz_name24,FSA_data24.RatingValue
+FROM FSA_data
+FULL JOIN  FSA_data24
+ON FSA_data.FHRSID = FSA_data24.FHRSID;
+
+SELECT FSA_data24.FHRSID, FSA_data.BusinessName, FSA_data24.BusinessName AS Biz_name24,FSA_data.RatingValue 
+FROM FSA_data
+FULL OUTER JOIN  FSA_data24
+ON FSA_data.FHRSID = FSA_data24.FHRSID;
+
+--UNION (FOR SAMECOLUMNS), UNION ALL
+
+SELECT * 
+FROM FSA_data
+FULL OUTER JOIN  FSA_data24
+ON FSA_data.FHRSID = FSA_data24.FHRSID;
+
+--UNION (FOR SAMECOLUMNS) 1411 ROWS
+SELECT FHRSID,BusinessName 
+FROM FSA_data
+UNION
+SELECT FHRSID,BusinessName 
+FROM FSA_data24
+ORDER BY FHRSID
+
+--UNION ALL(FOR SAMECOLUMNS) 2804 ROWS (4 NEW ENTRIES REST ALL DOUBLE)
+
+SELECT FHRSID,BusinessName 
+FROM FSA_data
+UNION ALL
+SELECT FHRSID,BusinessName 
+FROM FSA_data24
+ORDER BY FHRSID
+
+
+--PARTITION BY
+
+SELECT BusinessType, 
+COUNT(BusinessName) OVER (PARTITION BY BusinessType) AS Count_biz, 
+AVG(Cast(RatingValue as float))OVER (PARTITION BY BusinessType)AS Avg_rating
+FROM FSA_data
+WHERE ISNUMERIC(RatingValue) = 1
+--GROUP BY BusinessName,BusinessType,RatingValue; 
